@@ -13,10 +13,10 @@ export const ApiWarning: React.FC<ApiWarningProps> = ({ isApiConfigured }) => {
   }
 
   return (
-    <Alert variant="destructive" className="m-4">
-      <AlertCircle className="h-4 w-4" />
+    <Alert variant="default" className="m-4 border-blue-500 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+      <AlertCircle className="h-4 w-4 text-blue-500 dark:text-blue-400" />
       <AlertDescription>
-        API key not configured. Responses are simulated. Configure your OpenAI API key in settings.
+        Using pattern-matching chatbot mode. This chatbot responds to common phrases without using external AI APIs.
       </AlertDescription>
     </Alert>
   );

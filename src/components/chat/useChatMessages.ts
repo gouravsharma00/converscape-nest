@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { generateAIResponse, isApiConfigured } from "@/utils/apiService";
+import { generatePatternResponse } from "@/utils/patternMatchingService";
 import { ChatMessageProps } from "@/components/ChatMessage";
 
 export function useChatMessages(conversationId: string | null, onConversationUpdate?: (title: string) => void) {
@@ -22,7 +22,7 @@ export function useChatMessages(conversationId: string | null, onConversationUpd
     if (messages.length === 0 && conversationId) {
       const welcomeMessage: ChatMessageProps = {
         role: "assistant",
-        content: "Hello! I'm your AI assistant. How can I help you today?",
+        content: "Hello! I'm your pattern-matching chatbot. I can respond to basic queries without using paid AI APIs. How can I help you today?",
         timestamp: new Date(),
       };
       setMessages([welcomeMessage]);
@@ -68,6 +68,42 @@ export function useChatMessages(conversationId: string | null, onConversationUpd
       toast({
         title: "Error",
         description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Use pattern matching response
+  const getPatternResponse = async (userMessage: string) => {
+    setIsLoading(true);
+    
+    try {
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+      
+      // Generate pattern-based response
+      const response = generatePatternResponse(userMessage);
+      
+      // Add AI response
+      const aiMessage: ChatMessageProps = {
+        role: "assistant",
+        content: response,
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, aiMessage]);
+      
+      // Update conversation title if this is the first message
+      if (messages.length === 1 && onConversationUpdate) {
+        const title = userMessage.slice(0, 30) + (userMessage.length > 30 ? "..." : "");
+        onConversationUpdate(title);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate response. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -133,7 +169,7 @@ export function useChatMessages(conversationId: string | null, onConversationUpd
     if (isApiConfigured()) {
       getAIResponse(message);
     } else {
-      getMockResponse(message);
+      getPatternResponse(message);
     }
   };
 

@@ -66,7 +66,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </div>
         </div>
         <div className="text-xs text-muted-foreground mt-2 text-center">
-          AI might produce inaccurate information. Your conversations are stored locally.
+          Pattern-matching chatbot responds to common phrases without using external AI APIs. Your conversations are stored locally.
         </div>
       </div>
     </form>
