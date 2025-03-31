@@ -6,6 +6,7 @@ import { ChatInterface } from "@/components/ChatInterface";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+import { ApiSettings } from "@/components/ApiSettings";
 
 interface Conversation {
   id: string;
@@ -16,6 +17,7 @@ interface Conversation {
 const Index = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [apiConfigured, setApiConfigured] = useState(false);
 
   const handleNewConversation = () => {
     const newId = uuidv4();
@@ -53,6 +55,10 @@ const Index = () => {
     }
   };
 
+  const handleApiConfigChange = (isConfigured: boolean) => {
+    setApiConfigured(isConfigured);
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -76,6 +82,9 @@ const Index = () => {
                 ? conversations.find(c => c.id === activeConversationId)?.title || "Chat" 
                 : "AI Chatbot"}
             </h2>
+            <div className="ml-auto flex items-center">
+              <ApiSettings onConfigChange={handleApiConfigChange} />
+            </div>
           </header>
           
           <main className="flex-1 flex flex-col">

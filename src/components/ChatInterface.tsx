@@ -4,6 +4,10 @@ import { ChatMessage, ChatMessageProps } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { generateAIResponse, initializeApiConfig, isApiConfigured } from "@/utils/apiService";
+import { ApiSettings } from "@/components/ApiSettings";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ChatInterfaceProps {
   conversationId: string | null;
@@ -16,36 +20,92 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 }) => {
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [apiConfigured, setApiConfigured] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // AI response examples
-  const aiResponses = [
-    "I'm just a simple AI assistant. I don't have real intelligence, but I can simulate responses.",
-    "That's an interesting question! As a demonstration AI, I can only provide mock answers.",
-    "I'm designed to show how a chatbot interface would work. In a real implementation, I would connect to a backend API.",
-    "In a production environment, I would use a language model like GPT or another AI service to generate proper responses.",
-    "This is just a frontend demo. With a backend integration, I could provide more meaningful and dynamic answers.",
-  ];
+  // Check if API is configured on component mount
+  useEffect(() => {
+    const configured = initializeApiConfig();
+    setApiConfigured(configured);
+  }, []);
 
-  // Generate a random AI response
-  const getRandomResponse = () => {
-    const randomIndex = Math.floor(Math.random() * aiResponses.length);
-    return aiResponses[randomIndex];
+  // Handle API configuration change
+  const handleApiConfigChange = (isConfigured: boolean) => {
+    setApiConfigured(isConfigured);
   };
 
-  // Simulate AI response with a delay
-  const simulateAIResponse = async (userMessage: string) => {
+  // Get AI response from the backend
+  const getAIResponse = async (userMessage: string) => {
+    setIsLoading(true);
+    
+    try {
+      // Build conversation history for context
+      const conversationHistory = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+      
+      // Add the new user message
+      conversationHistory.push({
+        role: 'user',
+        content: userMessage
+      });
+      
+      // Generate AI response
+      const response = await generateAIResponse(conversationHistory);
+      
+      // Add AI response to messages
+      const aiMessage: ChatMessageProps = {
+        role: "assistant",
+        content: response,
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, aiMessage]);
+      
+      // Update conversation title if this is the first message
+      if (messages.length === 1 && onConversationUpdate) {
+        const title = userMessage.slice(0, 30) + (userMessage.length > 30 ? "..." : "");
+        onConversationUpdate(title);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get AI response';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Use mock response as fallback when API is not configured
+  const getMockResponse = async (userMessage: string) => {
     setIsLoading(true);
     
     try {
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
       
+      // Mock AI responses
+      const aiResponses = [
+        "I'm just a simple AI assistant. I don't have real intelligence, but I can simulate responses.",
+        "That's an interesting question! As a demonstration AI, I can only provide mock answers.",
+        "I'm designed to show how a chatbot interface would work. In a real implementation, I would connect to a backend API.",
+        "In a production environment, I would use a language model like GPT or another AI service to generate proper responses.",
+        "This is just a frontend demo. Configure your API key in settings to get real AI responses.",
+      ];
+      
+      // Get random response
+      const randomIndex = Math.floor(Math.random() * aiResponses.length);
+      const response = aiResponses[randomIndex];
+      
       // Add AI response
       const aiMessage: ChatMessageProps = {
         role: "assistant",
-        content: getRandomResponse(),
+        content: response,
         timestamp: new Date(),
       };
       
@@ -75,7 +135,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     };
     
     setMessages(prev => [...prev, userMessage]);
-    simulateAIResponse(message);
+    
+    if (apiConfigured) {
+      getAIResponse(message);
+    } else {
+      getMockResponse(message);
+    }
   };
 
   // Scroll to bottom when messages change
@@ -105,6 +170,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   return (
     <div className="flex flex-col h-full">
+      {!apiConfigured && (
+        <Alert variant="warning" className="m-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            API key not configured. Responses are simulated. Configure your OpenAI API key in settings.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="flex-1 overflow-y-auto p-4">
         {messages.map((message, index) => (
           <ChatMessage
