@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { ChatMessage, ChatMessageProps } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -171,7 +170,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   return (
     <div className="flex flex-col h-full">
       {!apiConfigured && (
-        <Alert variant="warning" className="m-4">
+        <Alert variant="destructive" className="m-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             API key not configured. Responses are simulated. Configure your OpenAI API key in settings.

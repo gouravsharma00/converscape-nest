@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Settings } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveApiConfig, getApiConfig, clearApiConfig, isApiConfigured } from "@/utils/apiService";
 
 interface ApiSettingsProps {
@@ -14,11 +15,15 @@ interface ApiSettingsProps {
 export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
   const [open, setOpen] = useState(false);
   const [apiKey, setApiKey] = useState("");
+  const [provider, setProvider] = useState<"openai" | "supabase">("openai");
+  const [model, setModel] = useState("gpt-3.5-turbo");
   const [configured, setConfigured] = useState(false);
 
   useEffect(() => {
     const config = getApiConfig();
     setApiKey(config.apiKey || "");
+    setProvider(config.provider || "openai");
+    setModel(config.model || "gpt-3.5-turbo");
     const isConfigured = isApiConfigured();
     setConfigured(isConfigured);
     onConfigChange(isConfigured);
@@ -26,8 +31,9 @@ export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
 
   const handleSave = () => {
     saveApiConfig({
-      provider: 'openai',
-      apiKey: apiKey.trim()
+      provider,
+      apiKey: apiKey.trim(),
+      model
     });
     const isConfigured = isApiConfigured();
     setConfigured(isConfigured);
@@ -38,6 +44,8 @@ export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
   const handleClear = () => {
     clearApiConfig();
     setApiKey("");
+    setProvider("openai");
+    setModel("gpt-3.5-turbo");
     setConfigured(false);
     onConfigChange(false);
   };
@@ -61,12 +69,48 @@ export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
           <DialogHeader>
             <DialogTitle>AI API Configuration</DialogTitle>
             <DialogDescription>
-              Enter your OpenAI API key to enable AI chat responses.
-              Your key is stored only in your browser's local storage.
+              Configure your AI provider settings. Your settings are stored only in your browser's local storage.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="provider" className="text-right">
+                Provider
+              </Label>
+              <Select
+                value={provider}
+                onValueChange={(value: "openai" | "supabase") => setProvider(value)}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="openai">OpenAI (Direct)</SelectItem>
+                  <SelectItem value="supabase">Supabase Edge Function</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="model" className="text-right">
+                Model
+              </Label>
+              <Select
+                value={model}
+                onValueChange={(value) => setModel(value)}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select model" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                  <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
+                  <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="apiKey" className="text-right">
                 API Key
@@ -76,7 +120,7 @@ export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 type="password"
-                placeholder="sk-..."
+                placeholder={provider === "openai" ? "sk-..." : "Supabase service key"}
                 className="col-span-3"
               />
             </div>
