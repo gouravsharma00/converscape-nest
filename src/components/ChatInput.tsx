@@ -50,6 +50,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         return;
       }
 
+      toast({
+        title: "Listening...",
+        description: "Go ahead and speak. I'm listening!",
+        duration: 2000,
+      });
+
       voiceRecognition.startListening(
         (transcript) => {
           setMessage(transcript);
@@ -99,7 +105,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               type="button" 
               size="icon" 
               variant={voiceState.isListening ? "default" : "ghost"}
-              className={`h-8 w-8 rounded-full ${voiceState.isListening ? 'bg-purple-500 hover:bg-purple-600' : ''}`}
+              className={`h-8 w-8 rounded-full ${voiceState.isListening ? 'bg-purple-500 hover:bg-purple-600 animate-pulse' : ''}`}
               onClick={toggleVoiceRecognition}
               disabled={isLoading}
             >
@@ -120,7 +126,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </div>
         </div>
         <div className="text-xs text-muted-foreground mt-2 text-center">
-          NOVA AI - Your voice-enabled assistant that can search the web, answer questions, and follow voice commands.
+          NOVA AI - Your voice-enabled assistant. Try speaking to me or type your questions.
         </div>
       </div>
     </form>

@@ -1,13 +1,20 @@
 
 // Create our own types for SpeechRecognition as TypeScript doesn't have these by default
+interface SpeechRecognitionResult {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognitionResultList {
+  [index: number]: SpeechRecognitionResult;
+  length: number;
+  isFinal: boolean;
+}
+
 interface SpeechRecognitionEvent {
   results: {
-    [index: number]: {
-      [index: number]: {
-        transcript: string;
-        confidence: number;
-      };
-    };
+    [index: number]: SpeechRecognitionResultList;
+    length: number;
   };
 }
 
@@ -87,8 +94,10 @@ class VoiceRecognitionService {
     }
 
     this.recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript;
-      onResult(transcript.toLowerCase());
+      if (event.results.length > 0 && event.results[0].length > 0) {
+        const transcript = event.results[0][0].transcript;
+        onResult(transcript.toLowerCase());
+      }
     };
 
     this.recognition.onerror = (event: SpeechRecognitionError) => {
