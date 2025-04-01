@@ -1,14 +1,25 @@
 
 // Create our own types for SpeechRecognition as TypeScript doesn't have these by default
+interface SpeechRecognitionResult {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognitionAlternative {
+  readonly length: number;
+  [index: number]: SpeechRecognitionResult;
+  item(index: number): SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResultList {
+  readonly length: number;
+  [index: number]: SpeechRecognitionAlternative;
+  item(index: number): SpeechRecognitionAlternative;
+  isFinal?: boolean;
+}
+
 interface SpeechRecognitionEvent {
-  results: {
-    [index: number]: {
-      [index: number]: {
-        transcript: string;
-        confidence: number;
-      };
-    };
-  };
+  results: SpeechRecognitionResultList;
 }
 
 interface SpeechRecognitionError {
@@ -104,12 +115,18 @@ class VoiceRecognitionService {
     }
 
     this.recognition.onresult = (event: SpeechRecognitionEvent) => {
+      // Access the last result
       const lastResultIndex = event.results.length - 1;
-      const transcript = event.results[lastResultIndex][0].transcript;
-      const confidence = event.results[lastResultIndex][0].confidence;
+      const lastResult = event.results[lastResultIndex];
+      const transcript = lastResult[0].transcript;
+      const confidence = lastResult[0].confidence;
+      
+      // Check if this is a final result
+      // In some implementations, isFinal might be on the lastResult itself
+      const isFinal = 'isFinal' in lastResult ? lastResult.isFinal : true;
       
       // Only process final results with reasonable confidence
-      if (event.results[lastResultIndex].isFinal && confidence > 0.5) {
+      if (isFinal && confidence > 0.5) {
         console.log(`Voice recognized: "${transcript}" (confidence: ${confidence})`);
         onResult(transcript.toLowerCase().trim());
       }
