@@ -1,5 +1,5 @@
 
-// NOVA AI Assistant Service that mimics the functionality of the Python backend
+// NOVA AI Assistant Service that mimics the functionality of a true AI assistant
 
 // Helper utility to get current time
 const getCurrentTime = (): string => {
@@ -29,32 +29,18 @@ export const processCommand = async (query: string): Promise<string> => {
   query = query.toLowerCase();
 
   // Handle different types of commands
-  if (query.includes('wikipedia')) {
-    const searchTerm = query.replace('wikipedia', '').trim();
-    return await searchWikipedia(searchTerm);
+  if (query.includes('wikipedia') || query.includes('search for')) {
+    const searchTerm = query.replace(/wikipedia|search for/gi, '').trim();
+    return `I would search for information about "${searchTerm}" for you, but I'm designed to answer directly instead of searching the web. What specific information would you like to know about ${searchTerm}?`;
   } 
-  else if (query.includes('open youtube')) {
-    window.open('https://youtube.com', '_blank');
-    return "I've opened YouTube for you, babu. Is there something specific you'd like to watch?";
+  else if (query.includes('open youtube') || query.includes('youtube')) {
+    return "I'm designed to chat with you directly rather than opening websites. Is there something specific you'd like to discuss or a video topic you're interested in?";
   } 
-  else if (query.includes('open google')) {
-    window.open('https://google.com', '_blank');
-    return "I've opened Google. Let me know if you need help searching for something, babu!";
-  } 
-  else if (query.includes('youtube') && !query.includes('open')) {
-    const searchTerm = query.replace('youtube', '').trim();
-    const encodedSearch = encodeURIComponent(searchTerm);
-    window.open(`https://www.youtube.com/results?search_query=${encodedSearch}`, '_blank');
-    return `I've searched YouTube for "${searchTerm}". Hope you find what you're looking for, babu!`;
-  } 
-  else if (query.includes('google') && !query.includes('open')) {
-    const searchTerm = query.replace('google', '').trim();
-    const encodedSearch = encodeURIComponent(searchTerm);
-    window.open(`https://www.google.com/search?q=${encodedSearch}`, '_blank');
-    return `I've searched Google for "${searchTerm}". Let me know if you need more information, babu!`;
+  else if (query.includes('open google') || query.includes('google')) {
+    return "I'm your AI assistant, designed to answer your questions directly rather than opening a search engine. What would you like to know about?";
   } 
   else if (query.includes('play music')) {
-    return "I'd love to play music for you babu, but I don't have access to your local files in this web interface. Would you like me to search for music on YouTube instead?";
+    return "I'd love to play music for you, babu, but I'm currently designed to be a conversational AI. What kind of music do you enjoy listening to?";
   } 
   else if (query.includes('the time')) {
     return `It's currently ${getCurrentTime()}, babu. Anything else you'd like to know?`;
@@ -74,100 +60,55 @@ export const processCommand = async (query: string): Promise<string> => {
   else if (query.includes('reset chat')) {
     return "Chat has been reset, babu. What would you like to talk about now?";
   }
+  else if (query.includes('calculate') || /[0-9+\-*\/^]/.test(query)) {
+    try {
+      // Extract mathematical expression and evaluate it
+      const expression = query.replace(/calculate/i, '').replace(/what is/i, '').trim();
+      // CAUTION: eval is generally not recommended for production use due to security risks
+      // This is a simplified example
+      const result = eval(expression);
+      return `I've calculated that ${expression} equals ${result}, babu. Is there anything else you'd like me to calculate?`;
+    } catch (e) {
+      return "I'm having trouble understanding that calculation, babu. Could you please phrase it differently or provide a clearer mathematical expression?";
+    }
+  }
+  else if (query.includes('capital of')) {
+    const country = query.replace('capital of', '').replace('what is the', '').replace('tell me the', '').trim();
+    
+    const capitals: Record<string, string> = {
+      'usa': 'Washington D.C.',
+      'united states': 'Washington D.C.',
+      'uk': 'London',
+      'united kingdom': 'London',
+      'france': 'Paris',
+      'germany': 'Berlin',
+      'japan': 'Tokyo',
+      'china': 'Beijing',
+      'india': 'New Delhi',
+      'australia': 'Canberra',
+      'canada': 'Ottawa',
+      'brazil': 'Brasília',
+      'mexico': 'Mexico City',
+      'russia': 'Moscow'
+    };
+    
+    for (const key in capitals) {
+      if (country.includes(key)) {
+        return `The capital of ${country} is ${capitals[key]}, babu. It's a fascinating city with rich history and culture!`;
+      }
+    }
+    return `I don't have information about the capital of ${country} in my knowledge base, babu. I'm designed to have limited but helpful responses without searching the internet.`;
+  }
+  else if (query.includes('population of')) {
+    return "I don't have access to current population statistics, babu. I'm designed to be a conversational AI without internet search capabilities. Is there something else I can help you with?";
+  }
+  else if (query.includes('weather') || query.includes('temperature')) {
+    return "I don't have access to current weather information, babu. I'm designed to be a conversational AI without internet access. Could I help you with something else today?";
+  }
   else {
-    // For general knowledge questions, use multiple search engines
-    return await getGeneralKnowledgeResponse(query);
-  }
-};
-
-// Simulate a Wikipedia search
-const searchWikipedia = async (query: string): Promise<string> => {
-  try {
-    console.log(`Searching Wikipedia for: ${query}`);
-    const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
-    
-    if (!response.ok) {
-      throw new Error('Wikipedia search failed');
-    }
-    
-    const data = await response.json();
-    return `Here's what I found on Wikipedia about ${query}, babu: ${data.extract} Would you like to know more?`;
-  } catch (error) {
-    console.error('Wikipedia error:', error);
-    return "I tried searching Wikipedia, but couldn't find information about that, babu. Would you like me to try a different search term or perhaps search Google instead?";
-  }
-};
-
-// Enhanced general knowledge responses using web search
-const getGeneralKnowledgeResponse = async (query: string): Promise<string> => {
-  try {
-    // First, check for specific patterns that we can handle directly
-    if (query.includes('capital of')) {
-      const country = query.replace('capital of', '').replace('what is the', '').replace('tell me the', '').trim();
-      
-      const capitals: Record<string, string> = {
-        'usa': 'Washington D.C.',
-        'united states': 'Washington D.C.',
-        'uk': 'London',
-        'united kingdom': 'London',
-        'france': 'Paris',
-        'germany': 'Berlin',
-        'japan': 'Tokyo',
-        'china': 'Beijing',
-        'india': 'New Delhi',
-        'australia': 'Canberra',
-        'canada': 'Ottawa',
-        'brazil': 'Brasília',
-        'mexico': 'Mexico City',
-        'russia': 'Moscow'
-      };
-      
-      for (const key in capitals) {
-        if (country.includes(key)) {
-          return `The capital of ${country} is ${capitals[key]}, babu. It's a fascinating city with rich history and culture!`;
-        }
-      }
-    }
-    
-    if (query.includes('population of')) {
-      const searchTerm = `population of ${query.replace('population of', '').trim()}`;
-      const encodedSearch = encodeURIComponent(searchTerm);
-      window.open(`https://www.google.com/search?q=${encodedSearch}`, '_blank');
-      return `I've opened a Google search for "${searchTerm}", babu. You should find the latest population data there.`;
-    }
-    
-    if (query.includes('weather') || query.includes('temperature')) {
-      const searchTerm = `weather ${query.replace('weather', '').replace('temperature', '').trim()}`;
-      const encodedSearch = encodeURIComponent(searchTerm);
-      window.open(`https://www.google.com/search?q=${encodedSearch}`, '_blank');
-      return `I've opened a Google search for "${searchTerm}", babu. You should find the current weather information there.`;
-    }
-    
-    if (query.includes('calculate') || /[0-9+\-*\/^]/.test(query)) {
-      try {
-        // Extract mathematical expression and evaluate it
-        const expression = query.replace(/calculate/i, '').replace(/what is/i, '').trim();
-        // CAUTION: eval is generally not recommended for production use due to security risks
-        // This is a simplified example
-        const result = eval(expression);
-        return `I've calculated that ${expression} equals ${result}, babu. Is there anything else you'd like me to calculate?`;
-      } catch (e) {
-        return "I'm having trouble understanding that calculation, babu. Could you please phrase it differently or provide a clearer mathematical expression?";
-      }
-    }
-    
-    // For other queries, perform a web search
-    if (query.length > 0) {
-      const encodedSearch = encodeURIComponent(query);
-      window.open(`https://www.google.com/search?q=${encodedSearch}`, '_blank');
-      return `I've searched Google for "${query}", babu. Check the opened browser tab for the results. Is there anything specific from those results you'd like me to explain?`;
-    }
-    
-    // Use pattern matching service as fallback
+    // Use pattern matching service for general conversation
     const { generatePatternResponse } = await import('./patternMatchingService');
     return generatePatternResponse(query).replace(/\.$/, ", babu.");
-  } catch (error) {
-    console.error('Knowledge response error:', error);
-    return "I'm sorry babu, I'm having trouble processing that request. Could you try asking in a different way?";
   }
 };
+

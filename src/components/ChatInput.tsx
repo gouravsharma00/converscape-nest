@@ -63,10 +63,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                transcript.includes("what") || 
                transcript.includes("how") || 
                transcript.includes("when") || 
-               transcript.includes("open") || 
-               transcript.includes("search") || 
-               transcript.includes("google") || 
-               transcript.includes("youtube"))) {
+               transcript.includes("tell me"))) {
             
             onSendMessage(transcript);
             setMessage("");
@@ -146,7 +143,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </div>
         </div>
         <div className="text-xs text-muted-foreground mt-2 text-center">
-          NOVA AI - Voice commands: "open YouTube", "Google [search term]", "Wikipedia [topic]", "bye babu" to end
+          NOVA AI - Your personal AI assistant ready to chat with you
         </div>
       </div>
     </form>
