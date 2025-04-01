@@ -1,14 +1,16 @@
 
 import React from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 export const ApiWarning: React.FC = () => {
   return (
-    <div className="bg-muted p-3 text-sm border-b flex items-center gap-2">
-      <AlertCircle className="h-4 w-4 text-yellow-500" />
-      <span>
-        NOVA is an AI assistant designed to respond directly to your queries without searching the web.
-      </span>
-    </div>
+    <Alert variant="default" className="m-4 border-purple-500 bg-purple-50 dark:bg-purple-950 dark:border-purple-800">
+      <AlertCircle className="h-4 w-4 text-purple-500 dark:text-purple-400" />
+      <AlertDescription>
+        <span className="font-semibold">NOVA AI Assistant</span> - Your voice-enabled companion. Ask questions, search 
+        Wikipedia, or try voice commands like "open YouTube" or "Google something".
+      </AlertDescription>
+    </Alert>
   );
 };
