@@ -44,6 +44,9 @@ export type VoiceRecognitionCallback = (transcript: string) => void;
 class VoiceRecognitionService {
   private recognition: SpeechRecognition | null = null;
   private isListening: boolean = false;
+  private lang: string = 'en-US';
+  private retryCount: number = 0;
+  private maxRetries: number = 3;
 
   constructor() {
     // Check if browser supports SpeechRecognition
@@ -51,10 +54,23 @@ class VoiceRecognitionService {
       const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechRecognitionAPI) {
         this.recognition = new SpeechRecognitionAPI();
-        this.recognition.continuous = false;
-        this.recognition.interimResults = false;
-        this.recognition.lang = 'en-US';
+        this.configureRecognition();
       }
+    }
+  }
+
+  private configureRecognition() {
+    if (!this.recognition) return;
+    
+    this.recognition.continuous = false;
+    this.recognition.interimResults = true; // Enable interim results for faster feedback
+    this.recognition.lang = this.lang;
+  }
+
+  public setLanguage(lang: string): void {
+    this.lang = lang;
+    if (this.recognition) {
+      this.recognition.lang = lang;
     }
   }
 
@@ -78,6 +94,7 @@ class VoiceRecognitionService {
     }
 
     this.isListening = true;
+    this.retryCount = 0;
     
     if (onStateChange) {
       onStateChange({
@@ -87,11 +104,36 @@ class VoiceRecognitionService {
     }
 
     this.recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript;
-      onResult(transcript.toLowerCase());
+      const lastResultIndex = event.results.length - 1;
+      const transcript = event.results[lastResultIndex][0].transcript;
+      const confidence = event.results[lastResultIndex][0].confidence;
+      
+      // Only process final results with reasonable confidence
+      if (event.results[lastResultIndex].isFinal && confidence > 0.5) {
+        console.log(`Voice recognized: "${transcript}" (confidence: ${confidence})`);
+        onResult(transcript.toLowerCase().trim());
+      }
     };
 
     this.recognition.onerror = (event: SpeechRecognitionError) => {
+      console.error('Speech recognition error:', event.error);
+      
+      if (event.error === 'no-speech' && this.retryCount < this.maxRetries) {
+        // Retry on no-speech error
+        this.retryCount++;
+        try {
+          this.recognition?.stop();
+          setTimeout(() => {
+            if (this.isListening) {
+              this.recognition?.start();
+            }
+          }, 300);
+        } catch (e) {
+          console.error('Failed to restart recognition after no-speech error', e);
+        }
+        return;
+      }
+      
       if (onStateChange) {
         onStateChange({
           isListening: false,
@@ -101,18 +143,37 @@ class VoiceRecognitionService {
     };
 
     this.recognition.onend = () => {
-      this.isListening = false;
-      if (onStateChange) {
-        onStateChange({
-          isListening: false,
-          error: null
-        });
+      // Only set isListening to false if we're not retrying
+      if (this.retryCount >= this.maxRetries) {
+        this.isListening = false;
+        if (onStateChange) {
+          onStateChange({
+            isListening: false,
+            error: null
+          });
+        }
+      } else if (this.isListening) {
+        // If we're still supposed to be listening, restart
+        try {
+          this.recognition?.start();
+        } catch (e) {
+          console.error('Failed to restart recognition after end event', e);
+          this.isListening = false;
+          if (onStateChange) {
+            onStateChange({
+              isListening: false,
+              error: 'Voice recognition stopped unexpectedly'
+            });
+          }
+        }
       }
     };
 
     try {
       this.recognition.start();
+      console.log('Voice recognition started');
     } catch (error) {
+      console.error('Failed to start speech recognition:', error);
       if (onStateChange) {
         onStateChange({
           isListening: false,
@@ -124,7 +185,12 @@ class VoiceRecognitionService {
 
   public stopListening(): void {
     if (this.recognition && this.isListening) {
-      this.recognition.stop();
+      try {
+        this.recognition.stop();
+        console.log('Voice recognition stopped');
+      } catch (e) {
+        console.error('Error stopping recognition:', e);
+      }
       this.isListening = false;
     }
   }

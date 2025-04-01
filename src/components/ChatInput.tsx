@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { SendHorizonal, Mic, RefreshCw } from "lucide-react";
+import { SendHorizonal, Mic, MicOff, RefreshCw } from "lucide-react";
 import { voiceRecognition, VoiceRecognitionState } from "@/utils/voiceRecognitionService";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,6 +20,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     isListening: false,
     error: null
   });
+  const [voiceText, setVoiceText] = useState("");
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -40,6 +41,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const toggleVoiceRecognition = () => {
     if (voiceState.isListening) {
       voiceRecognition.stopListening();
+      setVoiceText("");
     } else {
       if (!voiceRecognition.isSupported()) {
         toast({
@@ -52,11 +54,28 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
       voiceRecognition.startListening(
         (transcript) => {
+          setVoiceText(transcript);
           setMessage(transcript);
-          // Auto-submit if we have a valid transcript
-          if (transcript.trim()) {
+          
+          // Only auto-submit if we have a clear command or question
+          if (transcript.trim().length > 3 && 
+              (transcript.includes("?") || 
+               transcript.includes("what") || 
+               transcript.includes("how") || 
+               transcript.includes("when") || 
+               transcript.includes("open") || 
+               transcript.includes("search") || 
+               transcript.includes("google") || 
+               transcript.includes("youtube"))) {
+            
             onSendMessage(transcript);
             setMessage("");
+            setVoiceText("");
+            
+            // Auto-stop listening after processing a command
+            setTimeout(() => {
+              voiceRecognition.stopListening();
+            }, 300);
           }
         },
         (state) => {
@@ -67,6 +86,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               description: state.error,
               variant: "destructive"
             });
+            setVoiceText("");
           }
         }
       );
@@ -90,8 +110,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={voiceState.isListening ? "Listening..." : "Ask NOVA something..."}
-            className="resize-none pr-24 max-h-40 min-h-[80px]"
+            placeholder={voiceState.isListening 
+              ? voiceText || "Listening... speak now" 
+              : "Ask NOVA something..."}
+            className={`resize-none pr-24 max-h-40 min-h-[80px] ${voiceState.isListening ? 'border-purple-500' : ''}`}
             disabled={isLoading || voiceState.isListening}
           />
           <div className="absolute bottom-2 right-2 flex space-x-2">
@@ -103,7 +125,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               onClick={toggleVoiceRecognition}
               disabled={isLoading}
             >
-              <Mic className="h-4 w-4" />
+              {voiceState.isListening ? (
+                <MicOff className="h-4 w-4 animate-pulse" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
             </Button>
             <Button
               type="submit"
@@ -120,7 +146,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </div>
         </div>
         <div className="text-xs text-muted-foreground mt-2 text-center">
-          NOVA AI - Your voice-enabled assistant that can search the web, answer questions, and follow voice commands.
+          NOVA AI - Voice commands: "open YouTube", "Google [search term]", "Wikipedia [topic]", "bye babu" to end
         </div>
       </div>
     </form>
