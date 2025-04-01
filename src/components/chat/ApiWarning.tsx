@@ -5,10 +5,11 @@ import { AlertCircle } from "lucide-react";
 
 export const ApiWarning: React.FC = () => {
   return (
-    <Alert variant="default" className="m-4 border-blue-500 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
-      <AlertCircle className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+    <Alert variant="default" className="m-4 border-purple-500 bg-purple-50 dark:bg-purple-950 dark:border-purple-800">
+      <AlertCircle className="h-4 w-4 text-purple-500 dark:text-purple-400" />
       <AlertDescription>
-        Voice-enabled AI assistant. Try asking questions, searching Wikipedia, or saying "open YouTube" or "Google something".
+        <span className="font-semibold">NOVA AI Assistant</span> - Your voice-enabled companion. Ask questions, search 
+        Wikipedia, or try voice commands like "open YouTube" or "Google something".
       </AlertDescription>
     </Alert>
   );

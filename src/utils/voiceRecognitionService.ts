@@ -1,4 +1,38 @@
 
+// Create our own types for SpeechRecognition as TypeScript doesn't have these by default
+interface SpeechRecognitionEvent {
+  results: {
+    [index: number]: {
+      [index: number]: {
+        transcript: string;
+        confidence: number;
+      };
+    };
+  };
+}
+
+interface SpeechRecognitionError {
+  error: string;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionError) => void;
+  onend: () => void;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => SpeechRecognition;
+    webkitSpeechRecognition?: new () => SpeechRecognition;
+  }
+}
+
 // This service handles voice recognition functionality
 export interface VoiceRecognitionState {
   isListening: boolean;
@@ -14,12 +48,13 @@ class VoiceRecognitionService {
   constructor() {
     // Check if browser supports SpeechRecognition
     if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-      // @ts-ignore - Typescript doesn't have these types by default
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      this.recognition = new SpeechRecognition();
-      this.recognition.continuous = false;
-      this.recognition.interimResults = false;
-      this.recognition.lang = 'en-US';
+      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognitionAPI) {
+        this.recognition = new SpeechRecognitionAPI();
+        this.recognition.continuous = false;
+        this.recognition.interimResults = false;
+        this.recognition.lang = 'en-US';
+      }
     }
   }
 

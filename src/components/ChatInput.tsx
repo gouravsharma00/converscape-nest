@@ -90,7 +90,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={voiceState.isListening ? "Listening..." : "Send a message..."}
+            placeholder={voiceState.isListening ? "Listening..." : "Ask NOVA something..."}
             className="resize-none pr-24 max-h-40 min-h-[80px]"
             disabled={isLoading || voiceState.isListening}
           />
@@ -99,7 +99,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               type="button" 
               size="icon" 
               variant={voiceState.isListening ? "default" : "ghost"}
-              className={`h-8 w-8 rounded-full ${voiceState.isListening ? 'bg-red-500 hover:bg-red-600' : ''}`}
+              className={`h-8 w-8 rounded-full ${voiceState.isListening ? 'bg-purple-500 hover:bg-purple-600' : ''}`}
               onClick={toggleVoiceRecognition}
               disabled={isLoading}
             >
@@ -109,7 +109,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               type="submit"
               size="icon"
               disabled={(!message.trim() && !voiceState.isListening) || isLoading}
-              className="h-8 w-8 rounded-full bg-chatbot-accent hover:bg-chatbot-accent/90"
+              className="h-8 w-8 rounded-full bg-purple-500 hover:bg-purple-600"
             >
               {isLoading ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
@@ -120,7 +120,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </div>
         </div>
         <div className="text-xs text-muted-foreground mt-2 text-center">
-          AI assistant that can search the web, answer questions, and follow voice commands.
+          NOVA AI - Your voice-enabled assistant that can search the web, answer questions, and follow voice commands.
         </div>
       </div>
     </form>

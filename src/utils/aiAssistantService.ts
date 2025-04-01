@@ -1,5 +1,5 @@
 
-// AI Assistant Service that mimics the functionality of the Python backend
+// NOVA AI Assistant Service that mimics the functionality of the Python backend
 
 // Helper utility to get current time
 const getCurrentTime = (): string => {
@@ -15,11 +15,11 @@ const getCurrentDate = (): string => {
 export const getGreeting = (): string => {
   const hour = new Date().getHours();
   if (hour >= 0 && hour < 12) {
-    return "Good Morning! What can I do for you?";
+    return "Good Morning! I'm NOVA, your AI assistant. How can I help you today?";
   } else if (hour >= 12 && hour < 18) {
-    return "Good Afternoon! What can I do for you?";
+    return "Good Afternoon! I'm NOVA, your AI assistant. How can I help you today?";
   } else {
-    return "Good Evening! What can I do for you?";
+    return "Good Evening! I'm NOVA, your AI assistant. How can I help you today?";
   }
 };
 
@@ -35,44 +35,44 @@ export const processCommand = async (query: string): Promise<string> => {
   } 
   else if (query.includes('open youtube')) {
     window.open('https://youtube.com', '_blank');
-    return "Opening YouTube";
+    return "I've opened YouTube for you. Is there something specific you'd like to watch?";
   } 
   else if (query.includes('open google')) {
     window.open('https://google.com', '_blank');
-    return "Opening Google";
+    return "I've opened Google. Let me know if you need help searching for something!";
   } 
   else if (query.includes('youtube') && !query.includes('open')) {
     const searchTerm = query.replace('youtube', '').trim();
     const encodedSearch = encodeURIComponent(searchTerm);
     window.open(`https://www.youtube.com/results?search_query=${encodedSearch}`, '_blank');
-    return `Searching YouTube for "${searchTerm}"`;
+    return `I've searched YouTube for "${searchTerm}". Hope you find what you're looking for!`;
   } 
   else if (query.includes('google') && !query.includes('open')) {
     const searchTerm = query.replace('google', '').trim();
     const encodedSearch = encodeURIComponent(searchTerm);
     window.open(`https://www.google.com/search?q=${encodedSearch}`, '_blank');
-    return `Searching Google for "${searchTerm}"`;
+    return `I've searched Google for "${searchTerm}". Let me know if you need more information!`;
   } 
   else if (query.includes('play music')) {
-    return "I'd play music for you, but I can't access your local files in a web browser. Try asking for a YouTube song instead!";
+    return "I'd love to play music for you, but I don't have access to your local files in this web interface. Would you like me to search for music on YouTube instead?";
   } 
   else if (query.includes('the time')) {
-    return `The time is ${getCurrentTime()}`;
+    return `It's currently ${getCurrentTime()}. Anything else you'd like to know?`;
   } 
   else if (query.includes('the date')) {
-    return `The date is ${getCurrentDate()}`;
+    return `Today's date is ${getCurrentDate()}. Do you have any plans for today?`;
   } 
   else if (query.includes('how are you')) {
-    return "I am fine! What about you?";
+    return "I'm doing well, thank you for asking! As an AI assistant, I'm always ready to help. How are you feeling today?";
   } 
-  else if (query.includes('fine')) {
-    return "Sounds good!";
+  else if (query.includes('fine') || query.includes('good') || query.includes('great')) {
+    return "That's wonderful to hear! Is there anything I can help you with today?";
   } 
-  else if (query.includes('bye')) {
-    return "Goodbye! Have a nice day!";
+  else if (query.includes('bye') || query.includes('goodbye')) {
+    return "It was a pleasure chatting with you! Feel free to come back anytime you need assistance. Have a great day!";
   } 
   else {
-    // For general knowledge questions, use a Wolfram Alpha-like response
+    // For general knowledge questions, use a more natural response
     return await getGeneralKnowledgeResponse(query);
   }
 };
@@ -87,10 +87,10 @@ const searchWikipedia = async (query: string): Promise<string> => {
     }
     
     const data = await response.json();
-    return `According to Wikipedia: ${data.extract}`;
+    return `Here's what I found on Wikipedia about ${query}: ${data.extract} Would you like to know more?`;
   } catch (error) {
     console.error('Wikipedia error:', error);
-    return "I couldn't find information about that on Wikipedia. Could you try a different search term?";
+    return "I tried searching Wikipedia, but couldn't find information about that. Would you like me to try a different search term or perhaps search Google instead?";
   }
 };
 
@@ -121,17 +121,17 @@ const getGeneralKnowledgeResponse = async (query: string): Promise<string> => {
       
       for (const key in capitals) {
         if (country.includes(key)) {
-          return `The capital of ${country} is ${capitals[key]}.`;
+          return `The capital of ${country} is ${capitals[key]}. It's a fascinating city with rich history and culture!`;
         }
       }
     }
     
     if (query.includes('population of')) {
-      return "I don't have current population data. Try looking that up on Google.";
+      return "I don't have the latest population data in my knowledge base. Would you like me to search online for this information?";
     }
     
     if (query.includes('weather') || query.includes('temperature')) {
-      return "I don't have access to current weather data. You might want to check a weather website or app for that information.";
+      return "I'd love to tell you about the weather, but I don't have access to real-time weather data in this interface. Would you like me to open a weather website for you?";
     }
     
     if (query.includes('calculate') || /[0-9+\-*\/^]/.test(query)) {
@@ -141,16 +141,17 @@ const getGeneralKnowledgeResponse = async (query: string): Promise<string> => {
         // CAUTION: eval is generally not recommended for production use due to security risks
         // This is a simplified example
         const result = eval(expression);
-        return `The result is ${result}`;
+        return `I've calculated that ${expression} equals ${result}. Is there anything else you'd like me to calculate?`;
       } catch (e) {
-        return "I couldn't calculate that. Please provide a clearer mathematical expression.";
+        return "I'm having trouble understanding that calculation. Could you please phrase it differently or provide a clearer mathematical expression?";
       }
     }
     
-    // Default fallback response
-    return "I don't have an answer for that. You might want to try searching Google or asking a more specific question.";
+    // Use pattern matching service as fallback
+    const { generatePatternResponse } = await import('./patternMatchingService');
+    return generatePatternResponse(query);
   } catch (error) {
     console.error('Knowledge response error:', error);
-    return "I'm having trouble finding an answer to that question.";
+    return "I'm sorry, I'm having trouble processing that request. Could you try asking in a different way?";
   }
 };
