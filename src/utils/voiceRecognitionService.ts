@@ -1,25 +1,18 @@
 
-// Create our own types for SpeechRecognition as TypeScript doesn't have these by default
+// Basic types for SpeechRecognition
 interface SpeechRecognitionResult {
   transcript: string;
   confidence: number;
 }
 
-interface SpeechRecognitionResultList {
-  [index: number]: SpeechRecognitionResult;
-  length: number;
-  isFinal: boolean;
-}
-
 interface SpeechRecognitionEvent {
   results: {
-    [index: number]: SpeechRecognitionResultList;
+    [index: number]: {
+      [index: number]: SpeechRecognitionResult;
+      isFinal: boolean;
+    };
     length: number;
   };
-}
-
-interface SpeechRecognitionError {
-  error: string;
 }
 
 interface SpeechRecognition extends EventTarget {
@@ -29,7 +22,7 @@ interface SpeechRecognition extends EventTarget {
   start(): void;
   stop(): void;
   onresult: (event: SpeechRecognitionEvent) => void;
-  onerror: (event: SpeechRecognitionError) => void;
+  onerror: (event: any) => void;
   onend: () => void;
 }
 
@@ -40,7 +33,6 @@ declare global {
   }
 }
 
-// This service handles voice recognition functionality
 export interface VoiceRecognitionState {
   isListening: boolean;
   error: string | null;
@@ -53,15 +45,12 @@ class VoiceRecognitionService {
   private isListening: boolean = false;
 
   constructor() {
-    // Check if browser supports SpeechRecognition
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognitionAPI) {
-        this.recognition = new SpeechRecognitionAPI();
-        this.recognition.continuous = false;
-        this.recognition.interimResults = false;
-        this.recognition.lang = 'en-US';
-      }
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognitionAPI) {
+      this.recognition = new SpeechRecognitionAPI();
+      this.recognition.continuous = false;
+      this.recognition.interimResults = false;
+      this.recognition.lang = 'en-US';
     }
   }
 
@@ -71,63 +60,33 @@ class VoiceRecognitionService {
 
   public startListening(onResult: VoiceRecognitionCallback, onStateChange?: (state: VoiceRecognitionState) => void): void {
     if (!this.recognition) {
-      if (onStateChange) {
-        onStateChange({
-          isListening: false,
-          error: 'Speech recognition is not supported in this browser'
-        });
-      }
+      if (onStateChange) onStateChange({ isListening: false, error: 'Speech recognition not supported' });
       return;
     }
 
-    if (this.isListening) {
-      this.stopListening();
-    }
-
-    this.isListening = true;
+    if (this.isListening) this.stopListening();
     
-    if (onStateChange) {
-      onStateChange({
-        isListening: true,
-        error: null
-      });
-    }
+    this.isListening = true;
+    if (onStateChange) onStateChange({ isListening: true, error: null });
 
-    this.recognition.onresult = (event: SpeechRecognitionEvent) => {
-      if (event.results.length > 0 && event.results[0].length > 0) {
-        const transcript = event.results[0][0].transcript;
-        onResult(transcript.toLowerCase());
-      }
+    this.recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      onResult(transcript.toLowerCase());
     };
 
-    this.recognition.onerror = (event: SpeechRecognitionError) => {
-      if (onStateChange) {
-        onStateChange({
-          isListening: false,
-          error: `Error occurred during recognition: ${event.error}`
-        });
-      }
+    this.recognition.onerror = (event) => {
+      if (onStateChange) onStateChange({ isListening: false, error: `Error: ${event.error}` });
     };
 
     this.recognition.onend = () => {
       this.isListening = false;
-      if (onStateChange) {
-        onStateChange({
-          isListening: false,
-          error: null
-        });
-      }
+      if (onStateChange) onStateChange({ isListening: false, error: null });
     };
 
     try {
       this.recognition.start();
     } catch (error) {
-      if (onStateChange) {
-        onStateChange({
-          isListening: false,
-          error: 'Failed to start speech recognition'
-        });
-      }
+      if (onStateChange) onStateChange({ isListening: false, error: 'Failed to start recognition' });
     }
   }
 

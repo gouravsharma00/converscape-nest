@@ -8,13 +8,10 @@ interface ChatMessagesProps {
   isLoading: boolean;
 }
 
-export const ChatMessages: React.FC<ChatMessagesProps> = ({ 
-  messages, 
-  isLoading 
-}) => {
+export const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isLoading }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom when messages change
+  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -31,14 +28,13 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
       ))}
       
       {isLoading && (
-        <div className="flex items-start space-x-2 animate-fade-in">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-chatbot-bot">
-            <span className="w-4 h-4 text-white flex items-center justify-center text-xs">AI</span>
+        <div className="flex items-start space-x-2">
+          <div className="w-8 h-8 rounded-full bg-chatbot-bot flex items-center justify-center">
+            <span className="text-white text-xs">AI</span>
           </div>
           <div className="space-y-2 w-2/3">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />
-            <Skeleton className="h-4 w-4/6" />
           </div>
         </div>
       )}

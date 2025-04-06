@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatMessageProps } from "@/components/ChatMessage";
 import { processCommand, getGreeting } from "@/utils/aiAssistantService";
@@ -9,35 +9,23 @@ export function useChatMessages(conversationId: string | null, onConversationUpd
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Clear messages when conversation changes
-  useEffect(() => {
-    if (conversationId) {
-      setMessages([]);
-    }
-  }, [conversationId]);
+  // Add welcome message if empty
+  if (messages.length === 0 && conversationId) {
+    const greeting = getGreeting();
+    setMessages([{
+      role: "assistant",
+      content: greeting,
+      timestamp: new Date(),
+    }]);
+  }
 
-  // Welcome message when no messages exist
-  useEffect(() => {
-    if (messages.length === 0 && conversationId) {
-      const greeting = getGreeting();
-      const welcomeMessage: ChatMessageProps = {
-        role: "assistant",
-        content: greeting,
-        timestamp: new Date(),
-      };
-      setMessages([welcomeMessage]);
-    }
-  }, [messages.length, conversationId]);
-
-  // Process user command and get AI response
+  // Process user command
   const processUserCommand = useCallback(async (userMessage: string) => {
     setIsLoading(true);
     
     try {
-      // Process the command using our AI service
       const response = await processCommand(userMessage);
       
-      // Add AI response to messages
       const aiMessage: ChatMessageProps = {
         role: "assistant",
         content: response,
@@ -46,16 +34,15 @@ export function useChatMessages(conversationId: string | null, onConversationUpd
       
       setMessages(prev => [...prev, aiMessage]);
       
-      // Update conversation title if this is the first message
+      // Update conversation title if first message
       if (messages.length === 1 && onConversationUpdate) {
         const title = userMessage.slice(0, 30) + (userMessage.length > 30 ? "..." : "");
         onConversationUpdate(title);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to process command';
       toast({
         title: "Error",
-        description: errorMessage,
+        description: error instanceof Error ? error.message : 'Failed to process command',
         variant: "destructive",
       });
     } finally {
