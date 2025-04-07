@@ -1,11 +1,10 @@
-
 // Simplified AI Assistant Service
 
 export const getGreeting = (): string => {
   const hour = new Date().getHours();
-  if (hour < 12) return "Good Morning! I'm NOVA. How can I help?";
-  if (hour < 18) return "Good Afternoon! I'm NOVA. How can I help?";
-  return "Good Evening! I'm NOVA. How can I help?";
+  if (hour < 12) return "Good Morning! I'm BuddyAI. How can I help?";
+  if (hour < 18) return "Good Afternoon! I'm BuddyAI. How can I help?";
+  return "Good Evening! I'm BuddyAI. How can I help?";
 };
 
 // Process commands from the user
@@ -25,7 +24,7 @@ export const processCommand = async (query: string): Promise<string> => {
     return "Goodbye! Come back anytime you need help.";
   } 
   else if (query.includes('your name') || query.includes('who are you')) {
-    return "I'm NOVA, your AI assistant.";
+    return "I'm BuddyAI, your AI assistant.";
   }
   else if (query.includes('what can you do')) {
     return "I can answer questions, tell jokes, and help with basic information.";

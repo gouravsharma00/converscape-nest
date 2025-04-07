@@ -1,18 +1,17 @@
-
 interface PatternResponse {
   pattern: RegExp;
   responses: string[];
 }
 
-// NOVA AI pattern matching chatbot patterns
+// BuddyAI pattern matching chatbot patterns
 const chatPatterns: PatternResponse[] = [
   {
     pattern: /hello|hi|hey|howdy/i,
     responses: [
-      "Hello there! I'm NOVA, your AI assistant. How can I help you today?",
-      "Hi! I'm NOVA. What would you like help with?",
-      "Hey there! I'm NOVA, ready to assist you. What's on your mind?",
-      "Greetings! I'm NOVA, your AI companion. How can I make your day better?"
+      "Hello there! I'm BuddyAI, your AI assistant. How can I help you today?",
+      "Hi! I'm BuddyAI. What would you like help with?",
+      "Hey there! I'm BuddyAI, ready to assist you. What's on your mind?",
+      "Greetings! I'm BuddyAI, your AI companion. How can I make your day better?"
     ]
   },
   {
@@ -26,9 +25,9 @@ const chatPatterns: PatternResponse[] = [
   {
     pattern: /your name|who are you/i,
     responses: [
-      "I'm NOVA, your AI assistant designed to help with information and tasks!",
-      "My name is NOVA. I'm an AI assistant here to make your life easier.",
-      "I'm NOVA, a voice-enabled AI companion ready to assist you with various tasks and questions."
+      "I'm BuddyAI, your AI assistant designed to help with information and tasks!",
+      "My name is BuddyAI. I'm an AI assistant here to make your life easier.",
+      "I'm BuddyAI, a voice-enabled AI companion ready to assist you with various tasks and questions."
     ]
   },
   {
@@ -78,7 +77,7 @@ const chatPatterns: PatternResponse[] = [
     responses: [
       "I can answer questions, search Wikipedia, open websites like YouTube and Google, and even perform voice commands! Just ask me anything.",
       "I'm designed to be your helpful assistant! I can search the web, answer questions, tell jokes, and help with various tasks through voice or text commands.",
-      "As NOVA, I can help you find information, search Wikipedia, open websites, answer general knowledge questions, and much more. What would you like help with?"
+      "As BuddyAI, I can help you find information, search Wikipedia, open websites, answer general knowledge questions, and much more. What would you like help with?"
     ]
   }
 ];
