@@ -96,7 +96,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={voiceState.isListening ? "Listening..." : "Ask NOVA something..."}
+            placeholder={voiceState.isListening ? "Listening..." : "Ask BuddyAI something..."}
             className="resize-none pr-24 max-h-40 min-h-[80px]"
             disabled={isLoading || voiceState.isListening}
           />
@@ -126,7 +126,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </div>
         </div>
         <div className="text-xs text-muted-foreground mt-2 text-center">
-          NOVA AI - Your voice-enabled assistant. Try speaking to me or type your questions.
+          BuddyAI - Your voice-enabled assistant. Try speaking to me or type your questions.
         </div>
       </div>
     </form>
