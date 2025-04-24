@@ -1,9 +1,8 @@
-
 // API service for chat functionalities
 import { createClient } from '@supabase/supabase-js';
 
 interface ApiConfig {
-  provider: 'openai' | 'supabase';
+  provider: 'openai' | 'supabase' | 'perplexity';
   apiKey: string | null;
   model?: string;
 }
@@ -185,9 +184,51 @@ const generateSupabaseAIResponse = async (messages: Array<{ role: 'user' | 'assi
   }
 };
 
+// Generate AI response using Perplexity
+const generatePerplexityResponse = async (messages: Array<{ role: 'user' | 'assistant'; content: string }>): Promise<string> => {
+  if (!apiConfig.apiKey) {
+    throw new Error('API key not configured');
+  }
+
+  try {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiConfig.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-sonar-small-128k-online',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are BuddyAI, a helpful and friendly AI assistant. Be concise and helpful in your responses.'
+          },
+          ...messages
+        ],
+        temperature: 0.7,
+        max_tokens: 1000
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'API request failed');
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('Error generating Perplexity response:', error);
+    throw error;
+  }
+};
+
 // Generate AI response using selected provider
 export const generateAIResponse = async (messages: Array<{ role: 'user' | 'assistant'; content: string }>): Promise<string> => {
-  if (apiConfig.provider === 'supabase') {
+  if (apiConfig.provider === 'perplexity') {
+    return generatePerplexityResponse(messages);
+  } else if (apiConfig.provider === 'supabase') {
     return generateSupabaseAIResponse(messages);
   } else {
     return generateOpenAIResponse(messages);

@@ -22,8 +22,8 @@ export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
   useEffect(() => {
     const config = getApiConfig();
     setApiKey(config.apiKey || "");
-    setProvider(config.provider || "openai");
-    setModel(config.model || "gpt-3.5-turbo");
+    setProvider(config.provider || "perplexity");  // Set default to Perplexity
+    setModel(config.model || "llama-3.1-sonar-small-128k-online");
     const isConfigured = isApiConfigured();
     setConfigured(isConfigured);
     onConfigChange(isConfigured);
@@ -69,7 +69,7 @@ export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
           <DialogHeader>
             <DialogTitle>AI API Configuration</DialogTitle>
             <DialogDescription>
-              Configure your AI provider settings. Your settings are stored only in your browser's local storage.
+              Configure your AI provider settings. Your settings are stored securely in your browser's local storage.
             </DialogDescription>
           </DialogHeader>
 
@@ -80,36 +80,39 @@ export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
               </Label>
               <Select
                 value={provider}
-                onValueChange={(value: "openai" | "supabase") => setProvider(value)}
+                onValueChange={(value: "openai" | "supabase" | "perplexity") => setProvider(value)}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select provider" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="perplexity">Perplexity AI</SelectItem>
                   <SelectItem value="openai">OpenAI (Direct)</SelectItem>
                   <SelectItem value="supabase">Supabase Edge Function</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="model" className="text-right">
-                Model
-              </Label>
-              <Select
-                value={model}
-                onValueChange={(value) => setModel(value)}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select model" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                  <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
-                  <SelectItem value="gpt-4o">GPT-4o</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {provider === 'perplexity' && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="model" className="text-right">
+                  Model
+                </Label>
+                <Select
+                  value={model}
+                  onValueChange={(value) => setModel(value)}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="llama-3.1-sonar-small-128k-online">Sonar Small</SelectItem>
+                    <SelectItem value="llama-3.1-sonar-large-128k-online">Sonar Large</SelectItem>
+                    <SelectItem value="llama-3.1-sonar-huge-128k-online">Sonar Huge</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="apiKey" className="text-right">
@@ -120,7 +123,7 @@ export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 type="password"
-                placeholder={provider === "openai" ? "sk-..." : "Supabase service key"}
+                placeholder={provider === 'perplexity' ? 'pplx-...' : provider === 'openai' ? 'sk-...' : 'Supabase service key'}
                 className="col-span-3"
               />
             </div>
