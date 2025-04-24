@@ -15,14 +15,14 @@ interface ApiSettingsProps {
 export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
   const [open, setOpen] = useState(false);
   const [apiKey, setApiKey] = useState("");
-  const [provider, setProvider] = useState<"openai" | "supabase">("openai");
-  const [model, setModel] = useState("gpt-3.5-turbo");
+  const [provider, setProvider] = useState<"openai" | "supabase" | "perplexity">("perplexity");
+  const [model, setModel] = useState("llama-3.1-sonar-small-128k-online");
   const [configured, setConfigured] = useState(false);
 
   useEffect(() => {
     const config = getApiConfig();
     setApiKey(config.apiKey || "");
-    setProvider(config.provider || "perplexity");  // Set default to Perplexity
+    setProvider(config.provider || "perplexity");
     setModel(config.model || "llama-3.1-sonar-small-128k-online");
     const isConfigured = isApiConfigured();
     setConfigured(isConfigured);
@@ -44,8 +44,8 @@ export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
   const handleClear = () => {
     clearApiConfig();
     setApiKey("");
-    setProvider("openai");
-    setModel("gpt-3.5-turbo");
+    setProvider("perplexity");
+    setModel("llama-3.1-sonar-small-128k-online");
     setConfigured(false);
     onConfigChange(false);
   };
@@ -93,7 +93,7 @@ export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
               </Select>
             </div>
 
-            {provider === 'perplexity' && (
+            {provider === "perplexity" && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="model" className="text-right">
                   Model
@@ -123,7 +123,7 @@ export const ApiSettings: React.FC<ApiSettingsProps> = ({ onConfigChange }) => {
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 type="password"
-                placeholder={provider === 'perplexity' ? 'pplx-...' : provider === 'openai' ? 'sk-...' : 'Supabase service key'}
+                placeholder={provider === "perplexity" ? "pplx-..." : provider === "openai" ? "sk-..." : "Supabase service key"}
                 className="col-span-3"
               />
             </div>

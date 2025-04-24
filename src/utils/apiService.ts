@@ -9,9 +9,9 @@ interface ApiConfig {
 
 // Default config
 let apiConfig: ApiConfig = {
-  provider: 'openai',
+  provider: 'perplexity',
   apiKey: null,
-  model: 'gpt-3.5-turbo'
+  model: 'llama-3.1-sonar-small-128k-online'
 };
 
 // Initialize Supabase client
@@ -198,7 +198,7 @@ const generatePerplexityResponse = async (messages: Array<{ role: 'user' | 'assi
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: apiConfig.model || 'llama-3.1-sonar-small-128k-online',
         messages: [
           {
             role: 'system',
